@@ -29,78 +29,79 @@ class PDFProcessor {
             const page = await pdf.getPage(pageNum);
             const textContent = await page.getTextContent();
             const pageItems = this.processPageContent(textContent.items);
-            scheduleItems.push(...pageItems);
+            if (pageItems.length > 0) {
+                scheduleItems.push(...pageItems);
+            }
         }
         return scheduleItems;
     }
 
     processPageContent(items) {
-        const lines = this.groupItemsByLine(items);
-        return this.parseLines(lines);
-    }
+        const lines = [];
+        let currentLine = [];
+        let currentY = null;
 
-    groupItemsByLine(items) {
-        const lines = new Map();
-        items.forEach(item => {
+        // Sort items by vertical position
+        items.sort((a, b) => b.transform[5] - a.transform[5]);
+
+        for (const item of items) {
             const y = Math.round(item.transform[5]);
-            if (!lines.has(y)) {
-                lines.set(y, []);
+            if (currentY === null) {
+                currentY = y;
             }
-            lines.get(y).push({
+
+            if (Math.abs(y - currentY) > 5) {
+                if (currentLine.length > 0) {
+                    lines.push([...currentLine]);
+                }
+                currentLine = [];
+                currentY = y;
+            }
+
+            currentLine.push({
                 text: item.str,
                 x: item.transform[4]
             });
-        });
-        return Array.from(lines.values());
+        }
+
+        if (currentLine.length > 0) {
+            lines.push(currentLine);
+        }
+
+        return this.parseLines(lines);
     }
 
     parseLines(lines) {
         const activities = [];
         let currentSection = '';
 
-        lines.forEach(line => {
-            // Sort items by x position
+        for (const line of lines) {
+            // Sort items in line by x position
             line.sort((a, b) => a.x - b.x);
-            
-            // Create a single string from all text items in the line
+
+            // Skip header and page number lines
             const lineText = line.map(item => item.text).join(' ');
-
-            // Skip header rows and page numbers
-            if (this.isHeaderRow(lineText) || this.isPageNumber(lineText)) {
-                return;
+            if (lineText.includes('Activity ID') || lineText.match(/Page \d+ of \d+/)) {
+                continue;
             }
 
-            if (this.isSectionHeader(lineText)) {
+            // Check for section headers
+            if (lineText.match(/^[A-Z\s-]+$/) && !lineText.includes('REED')) {
                 currentSection = lineText;
-                return;
+                continue;
             }
 
-            const activity = this.parseLine(line, currentSection);
+            // Process activity line
+            const activity = this.parseActivityLine(line, currentSection);
             if (activity) {
                 activities.push(activity);
             }
-        });
+        }
 
         return activities;
     }
 
-    isHeaderRow(text) {
-        return text.includes('Activity ID') || 
-               text.includes('Original Duration') ||
-               text.includes('Activity Name');
-    }
-
-    isPageNumber(text) {
-        return text.match(/Page \d+ of \d+/i) !== null;
-    }
-
-    isSectionHeader(text) {
-        return text.match(/^[A-Z\s-]+$/) && 
-               !text.includes('REED') &&
-               text.length > 3;
-    }
-
-    parseLine(line, section) {
+    parseActivityLine(line, section) {
         if (line.length < 4) return null;
 
         const activity = {
