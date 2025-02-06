@@ -5,13 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Construction Schedule Converter</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Load PDF.js first -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        console.log('Page loading...');
-        window.addEventListener('load', function() {
-            console.log('Page fully loaded');
-        });
-    </script>
 </head>
 <body>
     <div class="container">
@@ -22,7 +17,7 @@
 
         <main>
             <div class="upload-container" id="dropZone">
-                <input type="file" id="fileInput" accept=".pdf" onchange="console.log('File input changed')">
+                <input type="file" id="fileInput" accept=".pdf">
                 <div class="upload-content">
                     <h2>Upload Schedule PDF</h2>
                     <p>Drag and drop your file here or</p>
@@ -53,13 +48,8 @@
         </main>
     </div>
 
-    <script src="js/PDFProcessor.js"></script>
-    <script src="js/app.js"></script>
-    <script>
-        console.log('Scripts loaded');
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            console.log('File selected through listener:', e.target.files[0]);
-        });
-    </script>
+    <!-- Load our scripts in the correct order -->
+    <script src="PDFProcessor.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
