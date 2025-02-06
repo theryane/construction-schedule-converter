@@ -14,23 +14,106 @@ const downloadBtn = document.getElementById('downloadBtn');
 const copyBtn = document.getElementById('copyBtn');
 
 // Event Listeners
-dropZone.addEventListener('dragover', handleDragOver);
-dropZone.addEventListener('dragleave', handleDragLeave);
-dropZone.addEventListener('drop', handleDrop);
-fileInput.addEventListener('change', handleFileSelect);
-downloadBtn.addEventListener('click', handleDownload);
-copyBtn.addEventListener('click', handleCopy);
+function initializeEventListeners() {
+    fileInput.addEventListener('change', function(e) {
+        console.log('File selected:', e.target.files[0]);
+        if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            if (file.type === 'application/pdf') {
+                processFile(file);
+            } else {
+                showError('Please select a PDF file.');
+            }
+        }
+    });
 
-function handleDragOver(e) {
-    e.preventDefault();
-    dropZone.classList.add('drag-over');
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        
+        if (e.dataTransfer.files.length > 0) {
+            const file = e.dataTransfer.files[0];
+            if (file.type === 'application/pdf') {
+                processFile(file);
+            } else {
+                showError('Please drop a PDF file.');
+            }
+        }
+    });
+
+    downloadBtn.addEventListener('click', handleDownload);
+    copyBtn.addEventListener('click', handleCopy);
 }
 
-function handleDragLeave(e) {
-    e.preventDefault();
-    dropZone.classList.remove('drag-over');
+// File Processing
+async function processFile(file) {
+    try {
+        showProcessing(true);
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await scheduleProcessor.processSchedule(arrayBuffer);
+        displayResult(result);
+        showProcessing(false);
+    } catch (error) {
+        console.error('Error processing file:', error);
+        showError('Error processing the PDF file. Please try again.');
+        showProcessing(false);
+    }
 }
 
-function handleDrop(e) {
-    e.preventDefault();
-    dropZone.
+// UI Updates
+function showProcessing(show) {
+    processingStatus.classList.toggle('hidden', !show);
+    dropZone.classList.toggle('hidden', show);
+}
+
+function showError(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    dropZone.appendChild(errorDiv);
+    setTimeout(() => errorDiv.remove(), 3000);
+}
+
+function displayResult(data) {
+    preview.textContent = data;
+    previewContainer.classList.remove('hidden');
+}
+
+// Download and Copy Functions
+function handleDownload() {
+    const blob = new Blob([preview.textContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'schedule.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+async function handleCopy() {
+    try {
+        await navigator.clipboard.writeText(preview.textContent);
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => copyBtn.textContent = originalText, 2000);
+    } catch (err) {
+        console.error('Failed to copy text:', err);
+        showError('Failed to copy to clipboard');
+    }
+}
+
+// Initialize the application
+initializeEventListeners();
+console.log('Application initialized');
