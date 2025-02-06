@@ -59,14 +59,19 @@ class PDFProcessor {
         let currentSection = '';
 
         lines.forEach(line => {
+            // Sort items by x position
             line.sort((a, b) => a.x - b.x);
             
-            if (this.isHeaderRow(line) || this.isPageNumber(line)) {
+            // Create a single string from all text items in the line
+            const lineText = line.map(item => item.text).join(' ');
+
+            // Skip header rows and page numbers
+            if (this.isHeaderRow(lineText) || this.isPageNumber(lineText)) {
                 return;
             }
 
-            if (this.isSectionHeader(line)) {
-                currentSection = line[0].text;
+            if (this.isSectionHeader(lineText)) {
+                currentSection = lineText;
                 return;
             }
 
@@ -79,18 +84,92 @@ class PDFProcessor {
         return activities;
     }
 
-    formatScheduleData(data) {
-        const header = 'Activity ID,Activity Name,Original Duration,Remaining Duration,Start Date,Finish Date';
-        const rows = data.map(activity => 
-            `${activity.activityId},"${activity.activityName}",${activity.originalDuration},${activity.remainingDuration},${activity.startDate},${activity.finishDate}`
-        );
-        
-        return [header, '', ...rows].join('\n\n');
+    isHeaderRow(text) {
+        return text.includes('Activity ID') || 
+               text.includes('Original Duration') ||
+               text.includes('Activity Name');
     }
 
-    // Helper methods remain the same
+    isPageNumber(text) {
+        return text.match(/Page \d+ of \d+/i) !== null;
+    }
+
+    isSectionHeader(text) {
+        return text.match(/^[A-Z\s-]+$/) && 
+               !text.includes('REED') &&
+               text.length > 3;
+    }
+
+    parseLine(line, section) {
+        if (line.length < 4) return null;
+
+        const activity = {
+            section: section,
+            activityId: '',
+            activityName: '',
+            originalDuration: '',
+            remainingDuration: '',
+            startDate: '',
+            finishDate: ''
+        };
+
+        line.forEach(item => {
+            const position = this.determinePosition(item.x);
+            if (position) {
+                activity[position] += (activity[position] ? ' ' : '') + item.text;
+            }
+        });
+
+        return this.validateActivity(activity) ? this.cleanActivity(activity) : null;
+    }
+
+    determinePosition(x) {
+        for (const [key, range] of Object.entries(this.columnRanges)) {
+            if (x >= range.start && x < range.end) {
+                return key;
+            }
+        }
+        return null;
+    }
+
+    validateActivity(activity) {
+        return activity.activityId && 
+               !activity.activityId.includes('Total') &&
+               !activity.activityId.includes('PAGE');
+    }
+
+    cleanActivity(activity) {
+        return {
+            section: activity.section.trim(),
+            activityId: activity.activityId.trim(),
+            activityName: activity.activityName.trim(),
+            originalDuration: activity.originalDuration.trim(),
+            remainingDuration: activity.remainingDuration.trim(),
+            startDate: this.cleanDate(activity.startDate),
+            finishDate: this.cleanDate(activity.finishDate)
+        };
+    }
+
+    cleanDate(date) {
+        return date.trim()
+            .replace(/\*/g, '')
+            .replace(/\s+/g, ' ');
+    }
+
+    formatScheduleData(data) {
+        const header = 'Activity ID,Activity Name,Original Duration,Remaining Duration,Start Date,Finish Date';
+        const rows = data.map(item => [
+            item.activityId,
+            `"${item.activityName}"`,
+            item.originalDuration,
+            item.remainingDuration,
+            item.startDate,
+            item.finishDate
+        ].join(','));
+
+        return [header, '', ...rows].join('\n\n');
+    }
 }
 
-// Make PDFProcessor available globally
 window.PDFProcessor = PDFProcessor;
 console.log('PDFProcessor defined');
