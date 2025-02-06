@@ -1,96 +1,51 @@
-class PDFProcessor {
-    constructor() {
-        console.log('PDFProcessor initialized');
-        this.columnRanges = {
-            activityId: { start: 0, end: 100 },
-            activityName: { start: 100, end: 300 },
-            originalDuration: { start: 300, end: 400 },
-            remainingDuration: { start: 400, end: 500 },
-            startDate: { start: 500, end: 600 },
-            finishDate: { start: 600, end: 700 }
-        };
-    }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Construction Schedule Converter</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Construction Schedule Converter</h1>
+            <p class="subtitle">Convert schedule PDFs to Excel-compatible CSV format</p>
+        </header>
 
-    async processSchedule(pdfData) {
-        try {
-            console.log('Processing schedule...');
-            const pdf = await pdfjsLib.getDocument(pdfData).promise;
-            const scheduleData = await this.extractScheduleData(pdf);
-            return this.formatScheduleData(scheduleData);
-        } catch (error) {
-            console.error('Error processing schedule:', error);
-            throw new Error('Failed to process schedule PDF');
-        }
-    }
+        <main>
+            <div class="upload-container">
+                <div class="upload-content">
+                    <h2>Upload Schedule PDF</h2>
+                    <input type="file" id="fileInput" accept=".pdf">
+                    <button type="button" id="processButton" class="process-button">
+                        Convert to CSV
+                    </button>
+                </div>
+            </div>
 
-    async extractScheduleData(pdf) {
-        const scheduleItems = [];
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-            const page = await pdf.getPage(pageNum);
-            const textContent = await page.getTextContent();
-            const pageItems = this.processPageContent(textContent.items);
-            scheduleItems.push(...pageItems);
-        }
-        return scheduleItems;
-    }
+            <div id="processingStatus" class="status-container hidden">
+                <div class="spinner"></div>
+                <p>Processing your schedule...</p>
+            </div>
 
-    processPageContent(items) {
-        const lines = this.groupItemsByLine(items);
-        return this.parseLines(lines);
-    }
+            <div id="previewContainer" class="preview-container hidden">
+                <h3>Preview</h3>
+                <pre id="preview"></pre>
+                <div class="actions">
+                    <button type="button" id="downloadBtn" class="download-button">
+                        Download CSV
+                    </button>
+                    <button type="button" id="copyBtn" class="copy-button">
+                        Copy to Clipboard
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
 
-    groupItemsByLine(items) {
-        const lines = new Map();
-        items.forEach(item => {
-            const y = Math.round(item.transform[5]);
-            if (!lines.has(y)) {
-                lines.set(y, []);
-            }
-            lines.get(y).push({
-                text: item.str,
-                x: item.transform[4]
-            });
-        });
-        return Array.from(lines.values());
-    }
-
-    parseLines(lines) {
-        const activities = [];
-        let currentSection = '';
-
-        lines.forEach(line => {
-            line.sort((a, b) => a.x - b.x);
-            
-            if (this.isHeaderRow(line) || this.isPageNumber(line)) {
-                return;
-            }
-
-            if (this.isSectionHeader(line)) {
-                currentSection = line[0].text;
-                return;
-            }
-
-            const activity = this.parseLine(line, currentSection);
-            if (activity) {
-                activities.push(activity);
-            }
-        });
-
-        return activities;
-    }
-
-    formatScheduleData(data) {
-        const header = 'Activity ID,Activity Name,Original Duration,Remaining Duration,Start Date,Finish Date';
-        const rows = data.map(activity => 
-            `${activity.activityId},"${activity.activityName}",${activity.originalDuration},${activity.remainingDuration},${activity.startDate},${activity.finishDate}`
-        );
-        
-        return [header, '', ...rows].join('\n\n');
-    }
-
-    // Helper methods remain the same
-}
-
-// Make PDFProcessor available globally
-window.PDFProcessor = PDFProcessor;
-console.log('PDFProcessor defined');
+    <script src="PDFProcessor.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
