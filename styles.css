@@ -1,177 +1,71 @@
-:root {
-    --primary-color: #2563eb;
-    --hover-color: #1d4ed8;
-    --background-color: #f8fafc;
-    --container-color: #ffffff;
-    --text-color: #1e293b;
-    --border-color: #e2e8f0;
-    --success-color: #059669;
-    --error-color: #dc2626;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    line-height: 1.5;
-    background-color: var(--background-color);
-    color: var(--text-color);
-    padding: 2rem;
-}
-
-.container {
-    max-width: 1000px;
-    margin: 0 auto;
-    background-color: var(--container-color);
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
-}
-
-header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-h1 {
-    font-size: 2rem;
-    color: var(--text-color);
-    margin-bottom: 0.5rem;
-}
-
-.subtitle {
-    color: #64748b;
-}
-
 .upload-container {
-    border: 2px dashed var(--border-color);
-    border-radius: 8px;
+    border: 2px dashed #ccc;
     padding: 2rem;
     text-align: center;
-    margin-bottom: 2rem;
-    transition: all 0.3s ease;
+    margin: 2rem 0;
+    border-radius: 8px;
 }
 
 .upload-container.drag-over {
-    border-color: var(--primary-color);
-    background-color: #eff6ff;
+    border-color: #4CAF50;
+    background-color: #E8F5E9;
 }
 
-.upload-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.upload-content svg {
-    color: var(--primary-color);
-}
-
-.hidden {
-    display: none !important;
-}
-
-button {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-    transition: background-color 0.3s ease;
-}
-
-button:hover {
-    background-color: var(--hover-color);
-}
-
-.file-info {
-    color: #64748b;
-    font-size: 0.875rem;
+/* Temporarily make file input visible for testing */
+#fileInput {
+    margin-bottom: 1rem;
 }
 
 .status-container {
+    margin: 1rem 0;
+    padding: 1rem;
+    border-radius: 4px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 1rem;
-    margin: 2rem 0;
 }
 
-.spinner {
-    width: 24px;
-    height: 24px;
-    border: 3px solid #e2e8f0;
-    border-top-color: var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+.hidden {
+    display: none;
 }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
+/* Basic styling for the rest of the page */
+body {
+    font-family: Arial, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
 }
 
-.preview-container {
-    margin-top: 2rem;
+.container {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.preview-container h3 {
-    margin-bottom: 1rem;
+button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+button:hover {
+    background-color: #45a049;
 }
 
 #preview {
-    background-color: #f8fafc;
+    margin-top: 1rem;
     padding: 1rem;
-    border-radius: 6px;
-    font-family: 'Courier New', Courier, monospace;
-    white-space: pre;
-    overflow-x: auto;
-    border: 1px solid var(--border-color);
-    margin-bottom: 1rem;
-}
-
-.actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: flex-end;
-}
-
-.copy-button {
-    background-color: #475569;
-}
-
-.copy-button:hover {
-    background-color: #334155;
-}
-
-footer {
-    margin-top: 2rem;
-    text-align: center;
-    color: #64748b;
-    font-size: 0.875rem;
-}
-
-@media (max-width: 640px) {
-    body {
-        padding: 1rem;
-    }
-
-    .container {
-        padding: 1rem;
-    }
-
-    .actions {
-        flex-direction: column;
-    }
-
-    button {
-        width: 100%;
-    }
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    font-family: monospace;
 }
