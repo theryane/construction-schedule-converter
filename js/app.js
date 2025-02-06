@@ -4,33 +4,20 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 // Initialize PDF Processor
 const pdfProcessor = new PDFProcessor();
 
-// DOM Elements
-const fileInput = document.getElementById('fileInput');
-const processButton = document.getElementById('processButton');
-const processingStatus = document.getElementById('processingStatus');
-const previewContainer = document.getElementById('previewContainer');
-const preview = document.getElementById('preview');
-const downloadBtn = document.getElementById('downloadBtn');
-const copyBtn = document.getElementById('copyBtn');
+// Define all DOM elements
+const elements = {
+    fileInput: document.getElementById('fileInput'),
+    processButton: document.getElementById('processButton'),
+    processingStatus: document.getElementById('processingStatus'),
+    previewContainer: document.getElementById('previewContainer'),
+    preview: document.getElementById('preview'),
+    downloadBtn: document.getElementById('downloadBtn'),
+    copyBtn: document.getElementById('copyBtn')
+};
 
-// File Processing Function
-async function processFile(file) {
-    try {
-        showProcessing(true);
-        const arrayBuffer = await file.arrayBuffer();
-        const result = await pdfProcessor.processSchedule(arrayBuffer);
-        displayResult(result);
-        showProcessing(false);
-    } catch (error) {
-        console.error('Error processing file:', error);
-        showError('Error processing the PDF file. Please try again.');
-        showProcessing(false);
-    }
-}
-
-// Download Function
+// Define all core functions first
 function handleDownload() {
-    const blob = new Blob([preview.textContent], { type: 'text/csv' });
+    const blob = new Blob([elements.preview.textContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -41,44 +28,60 @@ function handleDownload() {
     URL.revokeObjectURL(url);
 }
 
-// Helper Functions
-function showProcessing(show) {
-    processingStatus.classList.toggle('hidden', !show);
-    processButton.disabled = show;
+async function processFile(file) {
+    try {
+        showProcessingStatus(true);
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await pdfProcessor.processSchedule(arrayBuffer);
+        displayResult(result);
+        showProcessingStatus(false);
+    } catch (error) {
+        console.error('Error processing file:', error);
+        showError('Error processing the PDF file. Please try again.');
+        showProcessingStatus(false);
+    }
+}
+
+function showProcessingStatus(show) {
+    elements.processingStatus.classList.toggle('hidden', !show);
+    elements.processButton.disabled = show;
 }
 
 function showError(message) {
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-message';
     errorDiv.textContent = message;
-    processButton.parentNode.insertBefore(errorDiv, processButton.nextSibling);
+    elements.processButton.parentNode.insertBefore(errorDiv, elements.processButton.nextSibling);
     setTimeout(() => errorDiv.remove(), 3000);
 }
 
 function displayResult(data) {
-    preview.textContent = data;
-    previewContainer.classList.remove('hidden');
+    elements.preview.textContent = data;
+    elements.previewContainer.classList.remove('hidden');
 }
 
-// Event Listeners
-fileInput.addEventListener('change', function(e) {
-    console.log('File selected:', e.target.files[0]);
-    if (e.target.files.length > 0) {
-        processButton.disabled = false;
-    }
-});
+// Set up event listeners after all functions are defined
+function initializeEventListeners() {
+    elements.fileInput.addEventListener('change', function(e) {
+        console.log('File selected:', e.target.files[0]);
+        if (e.target.files.length > 0) {
+            elements.processButton.disabled = false;
+        }
+    });
 
-processButton.addEventListener('click', function() {
-    const file = fileInput.files[0];
-    if (file) {
-        processFile(file);
-    } else {
-        showError('Please select a PDF file first.');
-    }
-});
+    elements.processButton.addEventListener('click', function() {
+        const file = elements.fileInput.files[0];
+        if (file) {
+            processFile(file);
+        } else {
+            showError('Please select a PDF file first.');
+        }
+    });
 
-downloadBtn.addEventListener('click', handleDownload);
+    elements.downloadBtn.addEventListener('click', handleDownload);
+}
 
-// Initialize UI State
-processButton.disabled = true;
-console.log('Application initialized');
+// Initialize the application
+initializeEventListeners();
+elements.processButton.disabled = true;
+console.log('Application initialized with all functions defined');
