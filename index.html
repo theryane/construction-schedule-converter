@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Construction Schedule Converter</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="./styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
@@ -15,15 +15,13 @@
         </header>
 
         <main>
-            <div class="upload-container" id="dropZone">
-                <input type="file" id="fileInput" accept=".pdf">
+            <div class="upload-container">
                 <div class="upload-content">
                     <h2>Upload Schedule PDF</h2>
-                    <p>Drag and drop your file here or</p>
-                    <button type="button" class="upload-button" onclick="document.getElementById('fileInput').click()">
-                        Select File
+                    <input type="file" id="fileInput" accept=".pdf">
+                    <button type="button" id="processButton" class="process-button">
+                        Convert to CSV
                     </button>
-                    <p class="file-info" id="fileInfo">Maximum file size: 10MB</p>
                 </div>
             </div>
 
@@ -47,7 +45,8 @@
         </main>
     </div>
 
-    <script src="PDFProcessor.js"></script>
-    <script src="app.js"></script>
+    <!-- Update script paths with ./ to indicate current directory -->
+    <script src="./PDFProcessor.js"></script>
+    <script src="./app.js"></script>
 </body>
 </html>
