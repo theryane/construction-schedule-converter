@@ -1,8 +1,8 @@
 // Initialize PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// Initialize Schedule Processor
-const scheduleProcessor = new ScheduleProcessor();
+// Initialize PDF Processor
+const pdfProcessor = new PDFProcessor();
 
 // DOM Elements
 const dropZone = document.getElementById('dropZone');
@@ -60,7 +60,7 @@ async function processFile(file) {
     try {
         showProcessing(true);
         const arrayBuffer = await file.arrayBuffer();
-        const result = await scheduleProcessor.processSchedule(arrayBuffer);
+        const result = await pdfProcessor.processSchedule(arrayBuffer);
         displayResult(result);
         showProcessing(false);
     } catch (error) {
